@@ -1,144 +1,630 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Terms Wheel of Fortune</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f0f0f0;
-            padding: 20px;
-        }
-        #question {
-            font-size: 24px;
-            margin: 20px;
-        }
-        #hint {
-            color: #888;
-            margin-top: 10px;
-        }
-        #timer {
-            font-size: 20px;
-            color: red;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            margin-top: 20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Terms Wheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10151c;
+    --bg-grid: #161d26;
+    --panel: #1a222c;
+    --panel-edge: #263141;
+    --text: #eef1f5;
+    --muted: #8b95a5;
+    --teal: #45d8c0;
+    --amber: #f5a623;
+    --coral: #e8657a;
+    --navylite: #2c3a4b;
+    --good: #52d17a;
+    --focus: #7fd8ff;
+    color-scheme: dark;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #1b2634 0%, transparent 60%),
+      repeating-linear-gradient(0deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(90deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 48px),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', -apple-system, 'Segoe UI', sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 60px;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom: 22px;
+    max-width: 620px;
+  }
+  header h1{
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  header p{
+    margin:0;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .scoreboard{
+    display:flex;
+    gap: 14px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    justify-content:center;
+  }
+  .stat{
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    padding: 10px 18px;
+    min-width: 108px;
+    text-align:center;
+  }
+  .stat .n{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--teal);
+    line-height:1.1;
+  }
+  .stat .l{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .layout{
+    display:flex;
+    gap: 40px;
+    align-items:flex-start;
+    justify-content:center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 980px;
+  }
+
+  /* --- Wheel --- */
+  .wheel-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    flex: 0 0 auto;
+  }
+  .wheel-wrapper{
+    position: relative;
+    width: min(320px, 78vw);
+    height: min(320px, 78vw);
+    margin-bottom: 22px;
+  }
+  .pointer{
+    position:absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 24px solid var(--amber);
+    filter: drop-shadow(0 0 6px rgba(245,166,35,0.6));
+    z-index: 5;
+  }
+  .wheel-hub{
+    position:absolute;
+    top:50%; left:50%;
+    width: 54px; height:54px;
+    background: var(--bg);
+    border: 3px solid var(--amber);
+    border-radius:50%;
+    transform: translate(-50%,-50%);
+    z-index: 4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 0 0 6px rgba(16,21,28,0.9), 0 0 18px rgba(245,166,35,0.35);
+  }
+  .wheel-hub svg{ width: 22px; height:22px; }
+
+  .wheel{
+    width:100%;
+    height:100%;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 0 6px var(--panel-edge), 0 12px 40px rgba(0,0,0,0.5);
+    transition: transform 4.6s cubic-bezier(0.15,0.68,0.1,1);
+  }
+  .wheel .seg-label{
+    position:absolute;
+    top: 50%; left: 50%;
+    width: 0; height:0;
+  }
+  .wheel .seg-label span{
+    position:absolute;
+    left: -26px;
+    top: -108px;
+    width: 52px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    color: rgba(16,21,28,0.88);
+    display:inline-block;
+  }
+
+  #spinBtn{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 13px 34px;
+    border-radius: 999px;
+    border: none;
+    cursor:pointer;
+    background: var(--teal);
+    color: #0c1116;
+    box-shadow: 0 6px 0 #29917f, 0 10px 24px rgba(69,216,192,0.25);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  #spinBtn:active{
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #29917f, 0 4px 14px rgba(69,216,192,0.2);
+  }
+  #spinBtn:disabled{
+    background: var(--navylite);
+    color: var(--muted);
+    box-shadow: 0 6px 0 #1c2531;
+    cursor:not-allowed;
+  }
+
+  .reset-link{
+    margin-top: 14px;
+    background:none;
+    border:none;
+    color: var(--muted);
+    text-decoration: underline;
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 13px;
+    cursor:pointer;
+  }
+  .reset-link:hover{ color: var(--text); }
+
+  /* --- Question panel --- */
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 16px;
+    padding: 26px;
+    width: 100%;
+    max-width: 460px;
+    min-height: 380px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .panel-idle{
+    margin:auto;
+    text-align:center;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .points-banner{
+    text-align:center;
+    margin: auto;
+  }
+  .points-banner .p-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 56px;
+    font-weight: 600;
+    color: var(--amber);
+    line-height:1;
+  }
+  .points-banner .p-label{
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  .round{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+  }
+  .round-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom: 14px;
+  }
+  .round-value{
+    font-family:'IBM Plex Mono', monospace;
+    color: var(--amber);
+    font-weight:600;
+    font-size: 15px;
+  }
+  .round-count{
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .timer-track{
+    height: 8px;
+    background: var(--navylite);
+    border-radius: 999px;
+    overflow:hidden;
+    margin-bottom: 8px;
+  }
+  .timer-fill{
+    height:100%;
+    width:100%;
+    background: var(--good);
+    transition: width 1s linear, background-color 0.4s ease;
+  }
+  .timer-fill.warn{ background: var(--amber); }
+  .timer-fill.danger{ background: var(--coral); }
+  .timer-seconds{
+    text-align:right;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .question-text{
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+
+  .hint-btn{
+    align-self:flex-start;
+    background:none;
+    border: 1px solid var(--panel-edge);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor:pointer;
+    font-family:'Space Grotesk', sans-serif;
+    margin-bottom: 10px;
+  }
+  .hint-btn:hover{ border-color: var(--teal); color: var(--teal); }
+  .hint-text{
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 14px;
+    min-height: 18px;
+  }
+
+  .answer-row{
+    display:flex;
+    gap: 8px;
+    margin-top: auto;
+  }
+  #answerInput{
+    flex:1;
+    background: var(--bg);
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 15px;
+  }
+  #answerInput:focus{
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px rgba(127,216,255,0.2);
+  }
+  #submitBtn{
+    background: var(--teal);
+    color: #0c1116;
+    border:none;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-weight: 600;
+    font-family:'Space Grotesk', sans-serif;
+    cursor:pointer;
+  }
+  #submitBtn:disabled{ background: var(--navylite); color: var(--muted); cursor:not-allowed; }
+
+  .result{
+    margin: auto;
+    text-align:center;
+  }
+  .result .verdict{
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .result .verdict.correct{ color: var(--good); }
+  .result .verdict.wrong{ color: var(--coral); }
+  .result .answer-line{
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+  .result .answer-line b{ color: var(--text); }
+  #nextBtn{
+    background: var(--amber);
+    color: #0c1116;
+    border:none;
+    border-radius: 999px;
+    padding: 11px 28px;
+    font-weight: 600;
+    font-family:'Space Grotesk', sans-serif;
+    cursor:pointer;
+    font-size: 15px;
+  }
+
+  @media (max-width: 720px){
+    .layout{ align-items:center; }
+    .panel{ min-height: 340px; }
+  }
+</style>
 </head>
 <body>
 
-<h1>Tech Terms Wheel of Fortune</h1>
-<div id="question">Press "Spin" to start the game!</div>
-<div id="hint"></div>
-<div id="timer"></div>
-<button id="spinButton">Spin the Wheel</button>
-<button id="answerButton" style="display: none;">Answer</button>
+<header>
+  <h1>Tech Terms Wheel</h1>
+  <p>Spin for points, then race the clock to name the term.</p>
+</header>
+
+<div class="scoreboard">
+  <div class="stat"><div class="n" id="scoreVal">0</div><div class="l">Score</div></div>
+  <div class="stat"><div class="n" id="roundVal">0 / 12</div><div class="l">Questions used</div></div>
+</div>
+
+<div class="layout">
+  <div class="wheel-col">
+    <div class="wheel-wrapper">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel"></div>
+      <div class="wheel-hub">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <button id="spinBtn">Spin the wheel</button>
+    <button class="reset-link" id="resetBtn">Reset game</button>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="panel-idle" id="panelIdle">Spin the wheel to reveal how many points this round is worth.</div>
+  </div>
+</div>
 
 <script>
-    const questions = [
-        {
-            term: "Software", 
-            question: "What is a set of instructions used to operate computers?",
-            hint: "Includes applications and system-related tasks."
-        },
-        {
-            term: "Application Software", 
-            question: "What type of software is designed for end users?",
-            hint: "Common examples are word processors and browsers."
-        },
-        {
-            term: "System Software", 
-            question: "What manages computer hardware and software resources?",
-            hint: "Essential for running applications."
-        },
-        {
-            term: "Processor", 
-            question: "What is the brain of the computer called?",
-            hint: "Also known as the CPU."
-        },
-        {
-            term: "Execute", 
-            question: "What does it mean when a computer performs an instruction?",
-            hint: "It's about carrying out tasks from programs."
-        },
-        {
-            term: "Operating System", 
-            question: "What is the core software managing a computer's resources?",
-            hint: "Think of Windows or macOS."
-        },
-        {
-            term: "Device Drivers", 
-            question: "What allows communication between the OS and hardware?",
-            hint: "Essential for printers and graphic cards."
-        },
-        {
-            term: "Security Software", 
-            question: "What protects systems from malware and threats?",
-            hint: "Think of antivirus programs."
-        },
-        {
-            term: "Defragmentation", 
-            question: "What process reorganizes data on a hard drive?",
-            hint: "It helps improve performance and speed."
-        },
-        {
-            term: "Utility Software", 
-            question: "What assists in the maintenance of a computer system?",
-            hint: "Helps optimize performance."
-        },
-        {
-            term: "Fragmentation", 
-            question: "What happens when data is scattered across a device?",
-            hint: "Can slow down access speed."
-        },
-        {
-            term: "RAM", 
-            question: "What type of memory is used for temporary data storage?",
-            hint: "Crucial for quick access during tasks."
-        }
-    ];
+(function(){
+  const questions = [
+    { term:"Software", question:"What is a set of instructions used to operate computers?", hint:"It includes applications and system-related tasks." },
+    { term:"Application Software", question:"What type of software is designed for end users?", hint:"Common examples are word processors and browsers." },
+    { term:"System Software", question:"What manages computer hardware and software resources?", hint:"This is essential for running applications." },
+    { term:"Processor", question:"What is the brain of the computer called?", hint:"It's also known as the CPU." },
+    { term:"Execute", question:"What does it mean when a computer performs an instruction?", hint:"It's about carrying out tasks from programs." },
+    { term:"Operating System", question:"What is the core software managing a computer's resources?", hint:"Think of Windows or macOS." },
+    { term:"Device Drivers", question:"What allows communication between the OS and hardware?", hint:"They're essential for printers and graphic cards." },
+    { term:"Security Software", question:"What protects systems from malware and threats?", hint:"Think of antivirus programs." },
+    { term:"Defragmentation", question:"What process reorganizes data on a hard drive?", hint:"This helps improve performance and speed." },
+    { term:"Utility Software", question:"What assists in the maintenance of a computer system?", hint:"These programs help optimize performance." },
+    { term:"Fragmentation", question:"What happens when data is scattered across a device?", hint:"It can slow down access speed significantly." },
+    { term:"RAM", question:"What type of memory is used for temporary data storage?", hint:"It's crucial for quick access during tasks." }
+  ];
 
-    let timer;
-    
-    document.getElementById("spinButton").onclick = function() {
-        const randomIndex = Math.floor(Math.random() * questions.length);
-        const selectedQuestion = questions[randomIndex];
+  const segments = [
+    { points:100, color:'#45d8c0' },
+    { points:250, color:'#f5a623' },
+    { points:150, color:'#2c3a4b' },
+    { points:400, color:'#e8657a' },
+    { points:200, color:'#45d8c0' },
+    { points:500, color:'#f5a623' },
+    { points:300, color:'#2c3a4b' },
+    { points:350, color:'#e8657a' }
+  ];
+  const segAngle = 360 / segments.length;
 
-        document.getElementById("question").innerText = selectedQuestion.question;
-        document.getElementById("hint").innerText = "";
-        document.getElementById("answerButton").style.display = "inline";
-        
-        startTimer(30); // 30 seconds timer
-    };
+  const wheelEl = document.getElementById('wheel');
+  const spinBtn = document.getElementById('spinBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const panel = document.getElementById('panel');
+  const scoreVal = document.getElementById('scoreVal');
+  const roundVal = document.getElementById('roundVal');
 
-    document.getElementById("answerButton").onclick = function() {
-        const selectedQuestion = questions.find(q => q.question === document.getElementById("question").innerText);
-        if (selectedQuestion) {
-            document.getElementById("hint").innerText = selectedQuestion.hint;
-        }
-    };
+  let score = 0;
+  let currentRotation = 0;
+  let pool = [];
+  let usedCount = 0;
+  let timerInterval = null;
+  let currentQuestion = null;
+  let currentPoints = 0;
 
-    function startTimer(seconds) {
-        clearInterval(timer);
-        let timeLeft = seconds;
-        document.getElementById("timer").innerText = `Time Left: ${timeLeft} seconds`;
-        
-        timer = setInterval(function() {
-            timeLeft--;
-            document.getElementById("timer").innerText = `Time Left: ${timeLeft} seconds`;
-            
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                document.getElementById("hint").innerText = "Time's up! Try again.";
-                document.getElementById("answerButton").style.display = "none";
-            }
-        }, 1000);
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
     }
+    return arr;
+  }
+
+  function buildWheel(){
+    const stops = segments.map((s,i)=>{
+      const start = (i*segAngle).toFixed(2);
+      const end = ((i+1)*segAngle).toFixed(2);
+      return `${s.color} ${start}deg ${end}deg`;
+    }).join(', ');
+    wheelEl.style.background = `conic-gradient(from 0deg, ${stops})`;
+
+    segments.forEach((s,i)=>{
+      const angle = i*segAngle + segAngle/2;
+      const label = document.createElement('div');
+      label.className = 'seg-label';
+      label.style.transform = `rotate(${angle}deg)`;
+      const span = document.createElement('span');
+      span.style.transform = `rotate(${-angle}deg)`;
+      span.textContent = s.points;
+      label.appendChild(span);
+      wheelEl.appendChild(label);
+    });
+  }
+
+  function resetPool(){
+    pool = shuffle([...Array(questions.length).keys()]);
+    usedCount = 0;
+    roundVal.textContent = `0 / ${questions.length}`;
+  }
+
+  function nextQuestion(){
+    if(usedCount >= pool.length){
+      resetPool();
+    }
+    const q = questions[pool[usedCount]];
+    usedCount++;
+    roundVal.textContent = `${usedCount} / ${questions.length}`;
+    return q;
+  }
+
+  function normalize(str){
+    return str.toLowerCase().replace(/[^a-z0-9]/g,'');
+  }
+
+  function spin(){
+    spinBtn.disabled = true;
+    panel.innerHTML = '<div class="panel-idle">Spinning&hellip;</div>';
+
+    const segIndex = Math.floor(Math.random()*segments.length);
+    const targetCenter = segIndex*segAngle + segAngle/2;
+    const jitter = (Math.random()*segAngle*0.5) - segAngle*0.25;
+    const extraSpins = 5 + Math.floor(Math.random()*2);
+
+    const base = currentRotation - (currentRotation % 360);
+    let newRotation = base + 360*extraSpins + (360 - targetCenter) + jitter;
+    if(newRotation <= currentRotation) newRotation += 360;
+    currentRotation = newRotation;
+
+    wheelEl.style.transform = `rotate(${currentRotation}deg)`;
+
+    const onEnd = () => {
+      wheelEl.removeEventListener('transitionend', onEnd);
+      showPoints(segments[segIndex].points);
+    };
+    wheelEl.addEventListener('transitionend', onEnd);
+  }
+
+  function showPoints(points){
+    currentPoints = points;
+    panel.innerHTML = `
+      <div class="points-banner">
+        <div class="p-value">${points}</div>
+        <div class="p-label">points on the line this round</div>
+      </div>`;
+    setTimeout(startRound, 1400);
+  }
+
+  function startRound(){
+    currentQuestion = nextQuestion();
+    panel.innerHTML = `
+      <div class="round">
+        <div class="round-top">
+          <div class="round-value">${currentPoints} pts</div>
+          <div class="round-count">${roundVal.textContent}</div>
+        </div>
+        <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+        <div class="timer-seconds" id="timerSeconds">30s</div>
+        <div class="question-text">${currentQuestion.question}</div>
+        <button class="hint-btn" id="hintBtn">Show hint</button>
+        <div class="hint-text" id="hintText"></div>
+        <div class="answer-row">
+          <input type="text" id="answerInput" placeholder="Type the term&hellip;" autocomplete="off">
+          <button id="submitBtn">Submit</button>
+        </div>
+      </div>`;
+
+    document.getElementById('hintBtn').onclick = () => {
+      document.getElementById('hintText').textContent = currentQuestion.hint;
+    };
+    const input = document.getElementById('answerInput');
+    const submitBtn = document.getElementById('submitBtn');
+    input.focus();
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') submitAnswer(input.value); });
+    submitBtn.onclick = () => submitAnswer(input.value);
+
+    let timeLeft = 30;
+    const fill = document.getElementById('timerFill');
+    const seconds = document.getElementById('timerSeconds');
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      seconds.textContent = `${timeLeft}s`;
+      fill.style.width = `${(timeLeft/30)*100}%`;
+      fill.classList.toggle('warn', timeLeft <= 15 && timeLeft > 7);
+      fill.classList.toggle('danger', timeLeft <= 7);
+      if(timeLeft <= 0){
+        clearInterval(timerInterval);
+        finishRound(false, true);
+      }
+    }, 1000);
+  }
+
+  function submitAnswer(value){
+    clearInterval(timerInterval);
+    const correct = normalize(value) === normalize(currentQuestion.term);
+    finishRound(correct, false);
+  }
+
+  function finishRound(correct, timedOut){
+    clearInterval(timerInterval);
+    if(correct) score += currentPoints;
+    scoreVal.textContent = score;
+
+    const verdictText = timedOut ? "Time's up" : (correct ? 'Correct!' : 'Not quite');
+    const verdictClass = correct ? 'correct' : 'wrong';
+    const pointsLine = correct ? `+${currentPoints} points` : 'No points this round';
+
+    panel.innerHTML = `
+      <div class="result">
+        <div class="verdict ${verdictClass}">${verdictText}</div>
+        <div class="answer-line">The term was <b>${currentQuestion.term}</b><br>${pointsLine}</div>
+        <button id="nextBtn">Spin again</button>
+      </div>`;
+
+    document.getElementById('nextBtn').onclick = () => {
+      panel.innerHTML = '<div class="panel-idle">Spin the wheel to reveal how many points this round is worth.</div>';
+      spinBtn.disabled = false;
+    };
+  }
+
+  function resetGame(){
+    score = 0;
+    scoreVal.textContent = '0';
+    resetPool();
+    currentRotation = 0;
+    wheelEl.style.transition = 'none';
+    wheelEl.style.transform = 'rotate(0deg)';
+    void wheelEl.offsetWidth;
+    wheelEl.style.transition = '';
+    panel.innerHTML = '<div class="panel-idle">Spin the wheel to reveal how many points this round is worth.</div>';
+    spinBtn.disabled = false;
+  }
+
+  spinBtn.addEventListener('click', spin);
+  resetBtn.addEventListener('click', resetGame);
+
+  buildWheel();
+  resetPool();
+})();
 </script>
 </body>
 </html>
