@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Terms Wheel of Fortune</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        #question {
+            font-size: 24px;
+            margin: 20px;
+        }
+        #hint {
+            color: #888;
+            margin-top: 10px;
+        }
+        #timer {
+            font-size: 20px;
+            color: red;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Tech Terms Wheel of Fortune</h1>
+<div id="question">Press "Spin" to start the game!</div>
+<div id="hint"></div>
+<div id="timer"></div>
+<button id="spinButton">Spin the Wheel</button>
+<button id="answerButton" style="display: none;">Answer</button>
+
+<script>
+    const questions = [
+        {
+            term: "Software", 
+            question: "What is a set of instructions used to operate computers?",
+            hint: "Includes applications and system-related tasks."
+        },
+        {
+            term: "Application Software", 
+            question: "What type of software is designed for end users?",
+            hint: "Common examples are word processors and browsers."
+        },
+        {
+            term: "System Software", 
+            question: "What manages computer hardware and software resources?",
+            hint: "Essential for running applications."
+        },
+        {
+            term: "Processor", 
+            question: "What is the brain of the computer called?",
+            hint: "Also known as the CPU."
+        },
+        {
+            term: "Execute", 
+            question: "What does it mean when a computer performs an instruction?",
+            hint: "It's about carrying out tasks from programs."
+        },
+        {
+            term: "Operating System", 
+            question: "What is the core software managing a computer's resources?",
+            hint: "Think of Windows or macOS."
+        },
+        {
+            term: "Device Drivers", 
+            question: "What allows communication between the OS and hardware?",
+            hint: "Essential for printers and graphic cards."
+        },
+        {
+            term: "Security Software", 
+            question: "What protects systems from malware and threats?",
+            hint: "Think of antivirus programs."
+        },
+        {
+            term: "Defragmentation", 
+            question: "What process reorganizes data on a hard drive?",
+            hint: "It helps improve performance and speed."
+        },
+        {
+            term: "Utility Software", 
+            question: "What assists in the maintenance of a computer system?",
+            hint: "Helps optimize performance."
+        },
+        {
+            term: "Fragmentation", 
+            question: "What happens when data is scattered across a device?",
+            hint: "Can slow down access speed."
+        },
+        {
+            term: "RAM", 
+            question: "What type of memory is used for temporary data storage?",
+            hint: "Crucial for quick access during tasks."
+        }
+    ];
+
+    let timer;
+    
+    document.getElementById("spinButton").onclick = function() {
+        const randomIndex = Math.floor(Math.random() * questions.length);
+        const selectedQuestion = questions[randomIndex];
+
+        document.getElementById("question").innerText = selectedQuestion.question;
+        document.getElementById("hint").innerText = "";
+        document.getElementById("answerButton").style.display = "inline";
+        
+        startTimer(30); // 30 seconds timer
+    };
+
+    document.getElementById("answerButton").onclick = function() {
+        const selectedQuestion = questions.find(q => q.question === document.getElementById("question").innerText);
+        if (selectedQuestion) {
+            document.getElementById("hint").innerText = selectedQuestion.hint;
+        }
+    };
+
+    function startTimer(seconds) {
+        clearInterval(timer);
+        let timeLeft = seconds;
+        document.getElementById("timer").innerText = `Time Left: ${timeLeft} seconds`;
+        
+        timer = setInterval(function() {
+            timeLeft--;
+            document.getElementById("timer").innerText = `Time Left: ${timeLeft} seconds`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                document.getElementById("hint").innerText = "Time's up! Try again.";
+                document.getElementById("answerButton").style.display = "none";
+            }
+        }, 1000);
+    }
+</script>
+</body>
+</html>
