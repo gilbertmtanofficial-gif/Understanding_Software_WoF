@@ -36,10 +36,44 @@
       var(--bg);
     color: var(--text);
     font-family: 'Space Grotesk', -apple-system, 'Segoe UI', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+    padding: 28px 16px 60px;
+  }
+
+  .bg-fx{
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .bg-fx .orb{
+    position:absolute;
+    border-radius:50%;
+    filter: blur(70px);
+    opacity: 0.28;
+    will-change: transform;
+  }
+  .bg-fx .orb-a{ width:440px; height:440px; background: var(--teal); top:-140px; left:-100px; animation: driftA 19s ease-in-out infinite; }
+  .bg-fx .orb-b{ width:380px; height:380px; background: var(--amber); bottom:-150px; right:-110px; animation: driftB 23s ease-in-out infinite; }
+  .bg-fx .orb-c{ width:300px; height:300px; background: var(--coral); top:38%; left:58%; opacity:0.16; animation: driftC 27s ease-in-out infinite; }
+  .bg-fx .scanline{
+    position:absolute;
+    inset:0;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 4px);
+    mix-blend-mode: overlay;
+  }
+  @keyframes driftA{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(70px,50px); } }
+  @keyframes driftB{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-60px,-40px); } }
+  @keyframes driftC{ 0%,100%{ transform: translate(0,0) scale(1); } 50%{ transform: translate(-50px,40px) scale(1.15); } }
+
+  .app{
+    position: relative;
+    z-index: 1;
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding: 28px 16px 60px;
   }
 
   header{
@@ -67,6 +101,7 @@
     justify-content:center;
   }
   .stat{
+    position: relative;
     background: var(--panel);
     border: 1px solid var(--panel-edge);
     border-radius: 10px;
@@ -80,11 +115,36 @@
     font-weight: 600;
     color: var(--teal);
     line-height:1.1;
+    transition: transform 0.25s ease;
   }
   .stat .l{
     font-size: 12px;
     color: var(--muted);
     margin-top: 2px;
+  }
+  .stat.streak.hot{
+    border-color: var(--amber);
+    box-shadow: 0 0 0 1px var(--amber), 0 0 16px rgba(245,166,35,0.35);
+  }
+  .stat.streak.hot .n{ color: var(--amber); }
+  .stat.bump .n{ transform: scale(1.25); }
+
+  .float-score{
+    position:absolute;
+    left:50%;
+    top: -6px;
+    transform: translateX(-50%);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--good);
+    opacity: 1;
+    pointer-events:none;
+    animation: floatUp 1.1s ease forwards;
+  }
+  @keyframes floatUp{
+    0%{ transform: translate(-50%,0); opacity:1; }
+    100%{ transform: translate(-50%,-34px); opacity:0; }
   }
 
   .layout{
@@ -109,6 +169,20 @@
     width: min(320px, 78vw);
     height: min(320px, 78vw);
     margin-bottom: 22px;
+  }
+  .wheel-wrapper::before{
+    content:'';
+    position:absolute;
+    inset: -14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(69,216,192,0.28) 0%, transparent 70%);
+    z-index: 0;
+    animation: pulseGlow 2.6s ease-in-out infinite;
+  }
+  .wheel-wrapper.spinning::before{ animation: none; opacity: 0.55; }
+  @keyframes pulseGlow{
+    0%,100%{ transform: scale(0.96); opacity: 0.55; }
+    50%{ transform: scale(1.05); opacity: 0.9; }
   }
   .pointer{
     position:absolute;
@@ -211,6 +285,7 @@
     min-height: 380px;
     display:flex;
     flex-direction:column;
+    box-shadow: 0 0 0 1px rgba(69,216,192,0.06), 0 20px 50px rgba(0,0,0,0.35);
   }
 
   .panel-idle{
@@ -290,6 +365,12 @@
     margin-bottom: 14px;
   }
 
+  .clue-row{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
   .hint-btn{
     align-self:flex-start;
     background:none;
@@ -300,15 +381,46 @@
     font-size: 13px;
     cursor:pointer;
     font-family:'Space Grotesk', sans-serif;
-    margin-bottom: 10px;
   }
   .hint-btn:hover{ border-color: var(--teal); color: var(--teal); }
   .hint-text{
     color: var(--muted);
     font-size: 14px;
     font-style: italic;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
     min-height: 18px;
+  }
+
+  .tile-row{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .tile-word{
+    display:flex;
+    gap: 4px;
+  }
+  .tile{
+    width: 26px;
+    height: 30px;
+    background: var(--navylite);
+    border: 1px solid var(--panel-edge);
+    border-radius: 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--teal);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: tilePop 0.3s ease forwards;
+  }
+  @keyframes tilePop{
+    from{ transform: scale(0.4) rotate(-10deg); opacity:0; }
+    to{ transform: scale(1) rotate(0); opacity:1; }
   }
 
   .answer-row{
@@ -380,6 +492,15 @@
 </head>
 <body>
 
+<div class="bg-fx">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="scanline"></div>
+</div>
+
+<div class="app">
+
 <header>
   <h1>Tech Terms Wheel</h1>
   <p>Spin for points, then race the clock to name the term.</p>
@@ -387,12 +508,13 @@
 
 <div class="scoreboard">
   <div class="stat"><div class="n" id="scoreVal">0</div><div class="l">Score</div></div>
+  <div class="stat streak" id="streakStat"><div class="n" id="streakVal">0</div><div class="l">Streak 🔥</div></div>
   <div class="stat"><div class="n" id="roundVal">0 / 12</div><div class="l">Questions used</div></div>
 </div>
 
 <div class="layout">
   <div class="wheel-col">
-    <div class="wheel-wrapper">
+    <div class="wheel-wrapper" id="wheelWrapper">
       <div class="pointer"></div>
       <div class="wheel" id="wheel"></div>
       <div class="wheel-hub">
@@ -406,6 +528,8 @@
   <div class="panel" id="panel">
     <div class="panel-idle" id="panelIdle">Spin the wheel to reveal how many points this round is worth.</div>
   </div>
+</div>
+
 </div>
 
 <script>
@@ -438,13 +562,18 @@
   const segAngle = 360 / segments.length;
 
   const wheelEl = document.getElementById('wheel');
+  const wheelWrapper = document.getElementById('wheelWrapper');
   const spinBtn = document.getElementById('spinBtn');
   const resetBtn = document.getElementById('resetBtn');
   const panel = document.getElementById('panel');
   const scoreVal = document.getElementById('scoreVal');
   const roundVal = document.getElementById('roundVal');
+  const streakVal = document.getElementById('streakVal');
+  const streakStat = document.getElementById('streakStat');
+  const scoreStat = scoreVal.closest('.stat');
 
   let score = 0;
+  let streak = 0;
   let currentRotation = 0;
   let pool = [];
   let usedCount = 0;
@@ -501,8 +630,42 @@
     return str.toLowerCase().replace(/[^a-z0-9]/g,'');
   }
 
+  function scrambleWord(word){
+    if(word.length <= 1) return word;
+    let letters = word.split('');
+    let attempt = word;
+    let tries = 0;
+    while(attempt.toLowerCase() === word.toLowerCase() && tries < 12){
+      attempt = shuffle([...letters]).join('');
+      tries++;
+    }
+    return attempt;
+  }
+
+  function renderScrambledTiles(term){
+    const words = term.split(' ');
+    return words.map(word => {
+      const scrambled = scrambleWord(word);
+      const tiles = scrambled.split('').map((letter, i) =>
+        `<div class="tile" style="animation-delay:${i*0.04}s">${letter}</div>`
+      ).join('');
+      return `<div class="tile-word">${tiles}</div>`;
+    }).join('');
+  }
+
+  function spawnFloatingScore(points){
+    const el = document.createElement('div');
+    el.className = 'float-score';
+    el.textContent = `+${points}`;
+    scoreStat.appendChild(el);
+    scoreStat.classList.add('bump');
+    setTimeout(() => scoreStat.classList.remove('bump'), 250);
+    setTimeout(() => el.remove(), 1150);
+  }
+
   function spin(){
     spinBtn.disabled = true;
+    wheelWrapper.classList.add('spinning');
     panel.innerHTML = '<div class="panel-idle">Spinning&hellip;</div>';
 
     const segIndex = Math.floor(Math.random()*segments.length);
@@ -519,6 +682,7 @@
 
     const onEnd = () => {
       wheelEl.removeEventListener('transitionend', onEnd);
+      wheelWrapper.classList.remove('spinning');
       showPoints(segments[segIndex].points);
     };
     wheelEl.addEventListener('transitionend', onEnd);
@@ -545,8 +709,12 @@
         <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
         <div class="timer-seconds" id="timerSeconds">30s</div>
         <div class="question-text">${currentQuestion.question}</div>
-        <button class="hint-btn" id="hintBtn">Show hint</button>
+        <div class="clue-row">
+          <button class="hint-btn" id="hintBtn">Show hint</button>
+          <button class="hint-btn" id="scrambleBtn">Show scrambled letters</button>
+        </div>
         <div class="hint-text" id="hintText"></div>
+        <div class="tile-row" id="tileRow"></div>
         <div class="answer-row">
           <input type="text" id="answerInput" placeholder="Type the term&hellip;" autocomplete="off">
           <button id="submitBtn">Submit</button>
@@ -555,6 +723,9 @@
 
     document.getElementById('hintBtn').onclick = () => {
       document.getElementById('hintText').textContent = currentQuestion.hint;
+    };
+    document.getElementById('scrambleBtn').onclick = () => {
+      document.getElementById('tileRow').innerHTML = renderScrambledTiles(currentQuestion.term);
     };
     const input = document.getElementById('answerInput');
     const submitBtn = document.getElementById('submitBtn');
@@ -586,8 +757,16 @@
 
   function finishRound(correct, timedOut){
     clearInterval(timerInterval);
-    if(correct) score += currentPoints;
+    if(correct){
+      score += currentPoints;
+      streak += 1;
+      spawnFloatingScore(currentPoints);
+    } else {
+      streak = 0;
+    }
     scoreVal.textContent = score;
+    streakVal.textContent = streak;
+    streakStat.classList.toggle('hot', streak >= 3);
 
     const verdictText = timedOut ? "Time's up" : (correct ? 'Correct!' : 'Not quite');
     const verdictClass = correct ? 'correct' : 'wrong';
@@ -608,7 +787,10 @@
 
   function resetGame(){
     score = 0;
+    streak = 0;
     scoreVal.textContent = '0';
+    streakVal.textContent = '0';
+    streakStat.classList.remove('hot');
     resetPool();
     currentRotation = 0;
     wheelEl.style.transition = 'none';
