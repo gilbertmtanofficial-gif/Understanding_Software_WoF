@@ -29,11 +29,7 @@
   body{
     margin:0;
     min-height:100vh;
-    background:
-      radial-gradient(ellipse 900px 500px at 50% -10%, #1b2634 0%, transparent 60%),
-      repeating-linear-gradient(0deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 48px),
-      repeating-linear-gradient(90deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 48px),
-      var(--bg);
+    background: var(--bg);
     color: var(--text);
     font-family: 'Space Grotesk', -apple-system, 'Segoe UI', sans-serif;
     position: relative;
@@ -48,25 +44,67 @@
     z-index: 0;
     pointer-events: none;
   }
+  .bg-fx .grid{
+    position:absolute;
+    inset: -60px;
+    background:
+      repeating-linear-gradient(0deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(90deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 48px);
+    animation: gridMove 26s linear infinite;
+  }
+  .bg-fx .vignette{
+    position:absolute;
+    inset:0;
+    background: radial-gradient(ellipse 900px 560px at 50% -10%, #1c2938 0%, transparent 62%),
+                radial-gradient(ellipse 700px 500px at 50% 110%, #17202b 0%, transparent 60%);
+  }
   .bg-fx .orb{
     position:absolute;
     border-radius:50%;
     filter: blur(70px);
-    opacity: 0.28;
-    will-change: transform;
+    opacity: 0.4;
+    will-change: transform, filter;
+    animation-name: driftA, hueCycle;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-iteration-count: infinite, infinite;
   }
-  .bg-fx .orb-a{ width:440px; height:440px; background: var(--teal); top:-140px; left:-100px; animation: driftA 19s ease-in-out infinite; }
-  .bg-fx .orb-b{ width:380px; height:380px; background: var(--amber); bottom:-150px; right:-110px; animation: driftB 23s ease-in-out infinite; }
-  .bg-fx .orb-c{ width:300px; height:300px; background: var(--coral); top:38%; left:58%; opacity:0.16; animation: driftC 27s ease-in-out infinite; }
+  .bg-fx .orb-a{ width:460px; height:460px; background: var(--teal); top:-140px; left:-100px; animation-duration: 17s, 9s; }
+  .bg-fx .orb-b{ width:420px; height:420px; background: var(--amber); bottom:-160px; right:-120px; animation-name: driftB, hueCycle; animation-duration: 21s, 11s; }
+  .bg-fx .orb-c{ width:340px; height:340px; background: var(--coral); top:36%; left:58%; opacity:0.26; animation-name: driftC, hueCycle; animation-duration: 24s, 13s; }
   .bg-fx .scanline{
     position:absolute;
     inset:0;
-    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 4px);
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px);
     mix-blend-mode: overlay;
   }
-  @keyframes driftA{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(70px,50px); } }
-  @keyframes driftB{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-60px,-40px); } }
-  @keyframes driftC{ 0%,100%{ transform: translate(0,0) scale(1); } 50%{ transform: translate(-50px,40px) scale(1.15); } }
+  .bg-fx .particle{
+    position:absolute;
+    bottom: -24px;
+    left: var(--x, 50%);
+    width: var(--size, 5px);
+    height: var(--size, 5px);
+    border-radius: 50%;
+    background: var(--pcolor, var(--teal));
+    box-shadow: 0 0 10px var(--pcolor, var(--teal));
+    opacity: 0;
+    animation: floatUpParticle var(--dur, 16s) linear infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes gridMove{
+    0%{ background-position: 0 0, 0 0; }
+    100%{ background-position: 96px 48px, -48px 96px; }
+  }
+  @keyframes hueCycle{ 0%,100%{ filter: blur(70px) hue-rotate(0deg); } 50%{ filter: blur(70px) hue-rotate(35deg); } }
+  @keyframes driftA{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(80px,55px); } }
+  @keyframes driftB{ 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-70px,-45px); } }
+  @keyframes driftC{ 0%,100%{ transform: translate(0,0) scale(1); } 50%{ transform: translate(-55px,45px) scale(1.18); } }
+  @keyframes floatUpParticle{
+    0%{ transform: translateY(0) translateX(0); opacity:0; }
+    8%{ opacity: 0.9; }
+    85%{ opacity: 0.5; }
+    100%{ transform: translateY(-112vh) translateX(var(--drift, 30px)); opacity:0; }
+  }
 
   .app{
     position: relative;
@@ -86,6 +124,11 @@
     margin: 0 0 6px;
     letter-spacing: -0.02em;
     font-weight: 700;
+    animation: titleGlow 4.5s ease-in-out infinite;
+  }
+  @keyframes titleGlow{
+    0%,100%{ text-shadow: 0 0 14px rgba(69,216,192,0.28); }
+    50%{ text-shadow: 0 0 24px rgba(245,166,35,0.32); }
   }
   header p{
     margin:0;
@@ -365,12 +408,6 @@
     margin-bottom: 14px;
   }
 
-  .clue-row{
-    display:flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-  }
   .hint-btn{
     align-self:flex-start;
     background:none;
@@ -493,10 +530,13 @@
 <body>
 
 <div class="bg-fx">
+  <div class="grid"></div>
+  <div class="vignette"></div>
   <div class="orb orb-a"></div>
   <div class="orb orb-b"></div>
   <div class="orb orb-c"></div>
   <div class="scanline"></div>
+  <div id="particleField"></div>
 </div>
 
 <div class="app">
@@ -587,6 +627,27 @@
       [arr[i],arr[j]] = [arr[j],arr[i]];
     }
     return arr;
+  }
+
+  function spawnBackgroundParticles(){
+    const field = document.getElementById('particleField');
+    const colors = ['#45d8c0', '#f5a623', '#e8657a', '#7fd8ff'];
+    const count = 26;
+    for(let i=0;i<count;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 3 + Math.random()*5;
+      const dur = 12 + Math.random()*14;
+      const delay = -Math.random()*dur;
+      const drift = (Math.random()*80 - 40).toFixed(0) + 'px';
+      p.style.setProperty('--x', `${Math.random()*100}%`);
+      p.style.setProperty('--size', `${size}px`);
+      p.style.setProperty('--dur', `${dur}s`);
+      p.style.setProperty('--delay', `${delay}s`);
+      p.style.setProperty('--drift', drift);
+      p.style.setProperty('--pcolor', colors[Math.floor(Math.random()*colors.length)]);
+      field.appendChild(p);
+    }
   }
 
   function buildWheel(){
@@ -709,12 +770,9 @@
         <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
         <div class="timer-seconds" id="timerSeconds">30s</div>
         <div class="question-text">${currentQuestion.question}</div>
-        <div class="clue-row">
-          <button class="hint-btn" id="hintBtn">Show hint</button>
-          <button class="hint-btn" id="scrambleBtn">Show scrambled letters</button>
-        </div>
+        <div class="tile-row" id="tileRow">${renderScrambledTiles(currentQuestion.term)}</div>
+        <button class="hint-btn" id="hintBtn">Show hint</button>
         <div class="hint-text" id="hintText"></div>
-        <div class="tile-row" id="tileRow"></div>
         <div class="answer-row">
           <input type="text" id="answerInput" placeholder="Type the term&hellip;" autocomplete="off">
           <button id="submitBtn">Submit</button>
@@ -723,9 +781,6 @@
 
     document.getElementById('hintBtn').onclick = () => {
       document.getElementById('hintText').textContent = currentQuestion.hint;
-    };
-    document.getElementById('scrambleBtn').onclick = () => {
-      document.getElementById('tileRow').innerHTML = renderScrambledTiles(currentQuestion.term);
     };
     const input = document.getElementById('answerInput');
     const submitBtn = document.getElementById('submitBtn');
@@ -806,6 +861,7 @@
 
   buildWheel();
   resetPool();
+  spawnBackgroundParticles();
 })();
 </script>
 </body>
